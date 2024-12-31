@@ -1,19 +1,41 @@
-import React from 'react'
-import Movie from './components/Movie'
-import Navbar from './components/Navbar'
-import { Route, Routes } from 'react-router-dom'
-import MovieDetails from "../src/components/MovieDetails"
 
-function App() {
+import React from 'react';
+import { BrowserRouter as Router, Switch } from 'react-router-dom';
+import * as ROUTES from './constants/routes';
+import { IsUserRedirect, ProtectedRoute } from './helpers/routes';
+import { useAuthListener } from './hooks/index';
+import { Browse, Home, Signin, Signup } from './pages';
+
+
+export default function App() {
+  const { user } = useAuthListener();
+  console.log(user);
+
   return (
-    <div>
-      <Navbar/>
-      <Routes>
-        <Route path='/' element={<Movie/>}/>
-        <Route path="/movieDetails" element={<MovieDetails/>}/>
-      </Routes>
-    </div>
-  )
-}
+    <Router>
+      <Switch>
+        <IsUserRedirect user={user} loggedInPath={ROUTES.BROWSE}
+          path={ROUTES.SIGN_IN}
+        >
+          <Signin />
+        </IsUserRedirect>
 
-export default App
+        <IsUserRedirect user={user} loggedInPath={ROUTES.BROWSE}
+          path={ROUTES.SIGN_UP}
+        >
+          <Signup />
+        </IsUserRedirect>
+
+        <ProtectedRoute user={user} path={ROUTES.BROWSE} >
+          <Browse />
+        </ProtectedRoute>
+
+        <IsUserRedirect user={user} loggedInPath={ROUTES.BROWSE}
+          path={ROUTES.HOME} exact>
+          <Home />
+        </IsUserRedirect>
+      </Switch>
+
+    </Router>
+  );
+}
